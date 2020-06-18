@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.extflightdelays.model.Model;
+import it.polito.tdp.extflightdelays.model.StateAndNumber;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -48,6 +49,12 @@ public class ExtFlightDelaysController {
     @FXML
     void doCreaGrafo(ActionEvent event) {
 
+    	txtResult.clear();
+    	model.creaGrafo();
+    	
+    	this.cmbBoxStati.getItems().removeAll(this.cmbBoxStati.getItems()); 
+    	this.cmbBoxStati.getItems().addAll(this.model.getVertex()); 
+    	this.btnVisualizzaVelivoli.setDisable(false);
     }
 
     @FXML
@@ -57,11 +64,25 @@ public class ExtFlightDelaysController {
 
     @FXML
     void doVisualizzaVelivoli(ActionEvent event) {
+    	
+    	txtResult.clear();
+    	
+    	if (this.cmbBoxStati.getValue()==null) {
+    		txtResult.appendText("ERRORE : Selezioanre uno State! \n");
+    		return; 
+    	}
+    	
+    	txtResult.appendText("Collegamenti allo State "+this.cmbBoxStati.getValue()+":\n\n");
+    	for (StateAndNumber s: this.model.getCollegati(this.cmbBoxStati.getValue())) {
+    		txtResult.appendText(s+"\n");
+    	}
 
     }
     
     public void setModel(Model model) {
 		this.model = model;	
+		this.btnVisualizzaVelivoli.setDisable(true);
+		this.btnSimula.setDisable(true);
 	}
 
     @FXML // This method is called by the FXMLLoader when initialization is complete

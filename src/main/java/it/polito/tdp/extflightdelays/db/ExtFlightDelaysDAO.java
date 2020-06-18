@@ -10,10 +10,12 @@ import java.util.List;
 
 import it.polito.tdp.extflightdelays.model.Airline;
 import it.polito.tdp.extflightdelays.model.Airport;
+import it.polito.tdp.extflightdelays.model.CoupleStates;
 import it.polito.tdp.extflightdelays.model.Flight;
 
 public class ExtFlightDelaysDAO {
 
+	//Lista di State presenti nel db
 	public List<String> loadAllStates(){
 		String sql = "SELECT distinct(STATE) from airports";
 		List<String> result = new ArrayList<String>();
@@ -114,5 +116,37 @@ public class ExtFlightDelaysDAO {
 			System.out.println("Errore connessione al database");
 			throw new RuntimeException("Error Connection Database");
 		}
+	}
+	
+	public List<CoupleStates> getCouples(){
+		String sql="SELECT a1.STATE, a2.STATE, COUNT(DISTINCT tail_number) AS velivoli " + 
+				"FROM flights, airports a1, airports a2 " + 
+				"WHERE a1.ID=flights.ORIGIN_AIRPORT_ID AND " + 
+				"a2.ID=flights.DESTINATION_AIRPORT_ID AND " + 
+				"a1.ID != a2.id " + // non e' necessario per qst db ma meglio di sì mentre e' sbagliato mettere != sugli STATE perche' aprla dei voli cappio apposta
+				"GROUP BY  a1.STATE, a2.STATE"; 
+		List<CoupleStates> lista= new ArrayList<>(); 
+		
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				
+				CoupleStates c= new CoupleStates(rs.getString("a1.STATE"), rs.getString("a2.STATE"),
+						rs.getInt("velivoli"));
+				lista.add(c); 
+			}
+
+			conn.close();
+			return lista;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+		
 	}
 }
